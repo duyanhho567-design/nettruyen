@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Panel - MangaVN</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0f0f0f;color:#eee;font-family:Arial,sans-serif}a{text-decoration:none;color:inherit}.layout{display:flex;min-height:100vh}.side{width:240px;background:#171717;border-right:1px solid #292929;padding:25px 15px}.brand{font-size:24px;font-weight:bold;margin:0 10px 25px}.brand span{color:#ff4d4d}.side button{width:100%;text-align:left;border:0;background:transparent;color:#aaa;padding:12px;border-radius:7px;cursor:pointer}.side button:hover,.side button.active{background:#292929;color:#fff}.main{flex:1;padding:30px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.panel{display:none}.panel.active{display:block}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.card{background:#1b1b1b;border:1px solid #2c2c2c;border-radius:10px;padding:18px}.card h3{margin-bottom:8px}.card p{color:#999;font-size:13px}.btn{border:0;background:#ff4d4d;color:#fff;padding:10px 14px;border-radius:6px;cursor:pointer}.btn.dark{background:#303030}.btn.danger{background:#9f3030}.field{margin:12px 0}.field label{display:block;color:#aaa;font-size:13px;margin-bottom:5px}.field input,.field textarea{width:100%;padding:10px;background:#222;color:#fff;border:1px solid #383838;border-radius:6px}.field textarea{height:100px}.comicrow{display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid #292929;padding:12px 0}.modal{display:none;position:fixed;inset:0;background:#000b;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.modalbox{width:min(600px,100%);background:#191919;padding:22px;border-radius:12px}.close{float:right;background:#333;color:#fff;border:0;padding:7px;border-radius:5px;cursor:pointer}@media(max-width:800px){.side{width:70px}.brand{font-size:0}.brand span{font-size:22px}.side button{font-size:0;text-align:center}.side button:before{content:"•";font-size:22px}.main{padding:18px}.cards{grid-template-columns:1fr}}
+</style></head><body>
+<div class="layout"><aside class="side"><div class="brand"><span>Manga</span>VN</div>
+<button class="active" onclick="tab('dashboard',this)">📊 Dashboard</button><button onclick="tab('comics',this)">📚 Quản lý truyện</button><button onclick="tab('post',this)">➕ Đăng truyện</button><button onclick="tab('users',this)">👥 Người dùng</button><button onclick="tab('banner',this)">📢 Banner</button><button onclick="tab('settings',this)">⚙ Cài đặt</button><a href="index.html" style="display:block;color:#aaa;padding:12px">← Về website</a></aside>
+<main class="main">
+<div class="top"><div><h1>Admin Panel</h1><p style="color:#888">Quản trị MangaVN</p></div><button class="btn" onclick="logout()">Đăng xuất</button></div>
+
+<section id="dashboard" class="panel active"><div class="cards"><div class="card"><h3>📚 Truyện</h3><p id="comicCount">8 bộ</p></div><div class="card"><h3>👥 Người dùng</h3><p>Quản lý tài khoản</p></div><div class="card"><h3>🔔 Hệ thống</h3><p>Website đang hoạt động</p></div></div></section>
+
+<section id="comics" class="panel"><h2>Quản lý truyện</h2><div id="comicList" style="margin-top:15px"></div></section>
+
+<section id="post" class="panel"><h2>Đăng truyện</h2><div class="field"><label>Tên truyện</label><input id="newComic"></div><div class="field"><label>Mô tả</label><textarea id="newDesc"></textarea></div><button class="btn" onclick="addComic()">Đăng truyện</button></section>
+
+<section id="users" class="panel"><h2>Phân quyền người dùng</h2><div class="field"><label>Tài khoản</label><input id="userName" placeholder="vd: user01"></div><button class="btn" onclick="grant()">Cấp Admin</button> <button class="btn danger" onclick="revoke()">Thu hồi Admin</button><p id="userStatus" style="color:#999;margin-top:15px"></p></section>
+
+<section id="banner" class="panel"><h2>Tạo banner thông báo</h2><div class="field"><label>Tiêu đề</label><input id="bTitle" placeholder="🔥 Thông báo mới"></div><div class="field"><label>Nội dung</label><textarea id="bText" placeholder="Website vừa cập nhật..."></textarea></div><button class="btn" onclick="saveBanner()">Đăng banner</button></section>
+
+<section id="settings" class="panel"><h2>Cài đặt website</h2><div class="card" style="margin-top:15px"><h3>🔧 Bảo trì</h3><p>Bật chế độ bảo trì ở website.</p><button class="btn" onclick="toggleMaintenance()">Bật/tắt bảo trì</button></div><div class="card" style="margin-top:15px"><h3>🎨 Logo</h3><input id="logo" placeholder="MangaVN" style="padding:10px;background:#222;color:#fff;border:1px solid #333"><button class="btn" onclick="saveLogo()">Lưu logo</button></div></section>
+</main></div>
+<script>
+function tab(id,el){document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".side button").forEach(x=>x.classList.remove("active"));el.classList.add("active")}
+function addComic(){const n=newComic.value.trim();if(!n)return alert("Nhập tên truyện");const arr=JSON.parse(localStorage.getItem("mangaVN_comics")||"[]");arr.push({name:n,desc:newDesc.value});localStorage.setItem("mangaVN_comics",JSON.stringify(arr));newComic.value="";newDesc.value="";renderComics();alert("Đã đăng truyện")}
+function renderComics(){const arr=JSON.parse(localStorage.getItem("mangaVN_comics")||"[]");comicList.innerHTML=arr.length?arr.map((x,i)=>`<div class="comicrow"><div><b>${esc(x.name)}</b><p style="color:#888">${esc(x.desc||"")}</p></div><button class="btn danger" onclick="delComic(${i})">Xóa</button></div>`).join(""):"<p style='color:#888'>Chưa có truyện tự thêm.</p>"}
+function delComic(i){const a=JSON.parse(localStorage.getItem("mangaVN_comics")||"[]");a.splice(i,1);localStorage.setItem("mangaVN_comics",JSON.stringify(a));renderComics()}
+function grant(){const u=userName.value.trim();if(!u)return;localStorage.setItem("mangaVN_admin_"+u,"true");userStatus.textContent="Đã cấp quyền Admin cho "+u}
+function revoke(){const u=userName.value.trim();if(!u)return;localStorage.removeItem("mangaVN_admin_"+u);userStatus.textContent="Đã thu hồi quyền Admin của "+u}
+function saveBanner(){const t=bTitle.value.trim(),x=bText.value.trim();if(!t||!x)return alert("Nhập đủ banner");localStorage.setItem("mangaVN_banner",JSON.stringify({title:t,text:x}));alert("Banner đã cập nhật")}
+function saveLogo(){localStorage.setItem("mangaVN_logo",logo.value.trim()||"MangaVN");alert("Đã lưu logo")}
+function toggleMaintenance(){localStorage.setItem("mangaVN_maintenance",localStorage.getItem("mangaVN_maintenance")==="1"?"0":"1");alert("Đã đổi trạng thái bảo trì")}
+function logout(){location.href="index.html"}function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}renderComics();
+</script></body></html>

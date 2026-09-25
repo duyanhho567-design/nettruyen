@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Đọc truyện - MangaVN</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0d0d0d;color:#eee;font-family:Arial,sans-serif}a{color:inherit;text-decoration:none}.top{position:sticky;top:0;z-index:5;background:#171717;border-bottom:1px solid #292929;padding:12px}.bar{width:min(1000px,94%);margin:auto;display:flex;justify-content:space-between;align-items:center;gap:10px}.btn{border:0;background:#ff4d4d;color:#fff;padding:9px 13px;border-radius:6px;cursor:pointer}.dark{background:#292929}.reader{width:min(900px,100%);margin:auto}.chapter-head{text-align:center;padding:30px 10px}.page{min-height:500px;margin:10px 0;background:linear-gradient(145deg,#2b1821,#17283b);display:flex;align-items:center;justify-content:center;font-size:35px;font-weight:bold}.comment{background:#171717;border:1px solid #292929;border-radius:10px;padding:18px;margin:30px 0}.comment textarea{width:100%;height:90px;background:#222;border:1px solid #333;color:#fff;padding:10px;border-radius:6px;resize:vertical}.comment button{margin-top:9px}.item{border-top:1px solid #292929;padding:12px 0}.item b{color:#ff6464}.nav{display:flex;justify-content:center;gap:10px;padding:20px}
+</style></head><body>
+<div class="top"><div class="bar"><a href="index.html">← Trang chủ</a><strong id="title">Đang đọc...</strong><a href="admin.html">⚙ Admin</a></div></div>
+<main class="reader"><div class="chapter-head"><h1 id="comic">Truyện</h1><p>Chương <span id="chapter">1</span></p></div>
+<div id="pages"></div>
+<div class="nav"><button class="btn dark" onclick="changeChapter(-1)">← Chương trước</button><button class="btn" onclick="changeChapter(1)">Chương sau →</button></div>
+<div class="comment"><h2>💬 Bình luận chương</h2><p style="color:#999;margin:7px 0 12px">Bình luận được lưu trên trình duyệt này.</p><textarea id="commentText" placeholder="Viết bình luận..."></textarea><button class="btn" onclick="addComment()">Đăng bình luận</button><div id="comments" style="margin-top:15px"></div></div></main>
+<script>
+const q=new URLSearchParams(location.search);let comic=q.get("comic")||"Truyện mẫu",chapter=parseInt(q.get("chapter")||"1");
+document.getElementById("comic").textContent=comic.replaceAll("-"," ");document.getElementById("title").textContent=comic.replaceAll("-"," ");document.getElementById("chapter").textContent=chapter;
+function render(){pages.innerHTML="";for(let i=1;i<=5;i++){const d=document.createElement("div");d.className="page";d.textContent="Trang "+i+" • Chương "+chapter;pages.appendChild(d)}loadComments()}
+function changeChapter(n){chapter=Math.max(1,chapter+n);history.replaceState({},'',`reader.html?comic=${encodeURIComponent(comic)}&chapter=${chapter}`);document.getElementById("chapter").textContent=chapter;render();scrollTo(0,0)}
+function addComment(){const t=commentText.value.trim();if(!t)return;const key="comments_"+comic+"_"+chapter,arr=JSON.parse(localStorage.getItem(key)||"[]");arr.push({user:localStorage.getItem("mangaVN_currentUser")||"Khách",text:t,time:new Date().toLocaleString("vi-VN")});localStorage.setItem(key,JSON.stringify(arr));commentText.value="";loadComments()}
+function loadComments(){const key="comments_"+comic+"_"+chapter,arr=JSON.parse(localStorage.getItem(key)||"[]");comments.innerHTML=arr.map(x=>`<div class="item"><b>${escapeHtml(x.user)}</b> <small style="color:#777">${escapeHtml(x.time)}</small><div>${escapeHtml(x.text)}</div></div>`).join("")}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+render();
+</script></body></html>
